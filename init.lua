@@ -517,7 +517,7 @@ minetest.register_globalstep(function(dtime)
 end)
 
 minetest.register_node("walking_light:light_debug", {
-	drawtype = "glasslike",
+	drawtype = "airlike",
 	tiles = {"walking_light_debug.png"},
 	inventory_image = minetest.inventorycube("walking_light.png"),
 	paramtype = "light",
@@ -532,7 +532,7 @@ minetest.register_node("walking_light:light_debug", {
 })
 
 minetest.register_node("walking_light:light", {
-	drawtype = "glasslike",
+	drawtype = "airlike",
 	tiles = {"walking_light.png"},
 	inventory_image = minetest.inventorycube("walking_light.png"),
 	paramtype = "light",
