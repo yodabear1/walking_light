@@ -689,7 +689,7 @@ minetest.register_chatcommand("walking_light_add_light", {
 		return true, mapaddlight_done
 	end,
 })
-x
+
 local walkinglightdebug_descr = S("Change to debug mode, so light blocks are visible.")
 local walkinglightdebug_mustbeserver = S("You need the server privilege to use walking_light_debug")
 local walkinglightdebug_done = S("Done.")
