@@ -1,3 +1,6 @@
+
+local S = minetest.get_translator("walking_light")
+
 -- list of all players seen by minetest.register_on_joinplayer
 local players = {}
 -- all player positions last time light was updated: {player_name : {x, y, z}}
@@ -42,7 +45,7 @@ function walking_light.register_tool(tool)
 	default = 'default:' .. tool .. '_mese'
 
 	definition = table.copy(minetest.registered_items[default])
-	definition.description = definition.description .. ' with light'
+	definition.description = definition.description .. " " .. S("with light")
 	definition.inventory_image = 'walking_light_mese' .. tool .. '.png'
 
 	minetest.register_tool(item, definition)
@@ -557,16 +560,18 @@ update_walking_light_node()
 
 walking_light.register_tool('pick')
 
+local diamondhelmet_descr = S("Diamond Helmet with light")
 minetest.register_tool("walking_light:helmet_diamond", {
-	description = "Diamond Helmet with light",
+	description = diamondhelmet_descr,
 	inventory_image = "walking_light_inv_helmet_diamond.png",
 	wield_image = "3d_armor_inv_helmet_diamond.png",
 	groups = {armor_head=15, armor_heal=12, armor_use=100},
 	wear = 0,
 })
 
+local megatorch_descr = S("Megatorch")
 minetest.register_node("walking_light:megatorch", {
-    description = "Megatorch",
+    description = megatorch_descr,
     drawtype = "torchlike",
     tiles = {
         {
@@ -633,12 +638,16 @@ minetest.register_craft({
 	}
 })
 
+local mapclearlight_descr = S("Remove light nodes from the area")
+local mapclearlight_infloop_fail = S("Failed... infinite loop detected")
+local mustbeserver_todo_x = S("You need the server privilege to use")
+local command_done = S("Done.")
 minetest.register_chatcommand("walking_light_clear_light", {
 	params = "<size>",
-	description = "Remove light nodes from the area",
+	description = mapclearlight_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, "You need the server privilege to use mapclearlight"
+			return false, mustbeserver_todo_x .. " mapclearlight"
 		end
 
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
@@ -651,20 +660,21 @@ minetest.register_chatcommand("walking_light_clear_light", {
 				oldpoint = point
 				point = minetest.find_node_near(pos, size/2, v)
 				if poseq(oldpoint, point) then
-					return false, "Failed... infinite loop detected"
+					return false, mapclearlight_infloop_fail
 				end
 			end
 		end
-		return true, "Done."
+		return true, command_done
 	end,
 })
 
+local mapaddlight_descr = S("Add walking_light:light to a position, without a player owning it")
 minetest.register_chatcommand("walking_light_add_light", {
 	params = "<size>",
-	description = "Add walking_light:light to a position, without a player owning it",
+	description = mapaddlight_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, "You need the server privilege to use mapaddlight"
+			return false, mustbeserver_todo_x .. " mapaddlight"
 		end
 
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
@@ -674,21 +684,22 @@ minetest.register_chatcommand("walking_light_add_light", {
 			mt_add_node(pos,{type="node",name=walking_light_node})
 		end
 
-		return true, "Done."
+		return true, command_done
 	end,
 })
 
+local walkinglightdebug_descr = S("Change to debug mode, so light blocks are visible.")
 minetest.register_chatcommand("walking_light_debug", {
-	description = "Change to debug mode, so light blocks are visible.",
+	description = walkinglightdebug_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, "You need the server privilege to use walking_light_debug"
+			return false, mustbeserver_todo_x .. " walking_light_debug"
 		end
 
 		walking_light_debug = not walking_light_debug
         update_walking_light_node()
  
-		return true, "Done."
+		return true, command_done
 	end,
 })
 
