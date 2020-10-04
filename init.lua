@@ -639,15 +639,15 @@ minetest.register_craft({
 })
 
 local mapclearlight_descr = S("Remove light nodes from the area")
-local mapclearlight_mustbeserver = S("You need the server privilege to use mapclearlight")
 local mapclearlight_infloop_fail = S("Failed... infinite loop detected")
-local mapclearlight_done = S("Done.")
+local mustbeserver_todo_x = S("You need the server privilege to use")
+local command_done = S("Done.")
 minetest.register_chatcommand("walking_light_clear_light", {
 	params = "<size>",
 	description = mapclearlight_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, mapclearlight_mustbeserver
+			return false, mustbeserver_todo_x .. " mapclearlight"
 		end
 
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
@@ -664,19 +664,17 @@ minetest.register_chatcommand("walking_light_clear_light", {
 				end
 			end
 		end
-		return true, mapclearlight_done
+		return true, command_done
 	end,
 })
 
 local mapaddlight_descr = S("Add walking_light:light to a position, without a player owning it")
-local mapaddlight_mustbeserver = S("You need the server privilege to use mapaddlight")
-local mapaddlight_done = S("Done.")
 minetest.register_chatcommand("walking_light_add_light", {
 	params = "<size>",
 	description = mapaddlight_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, mapaddlight_mustbeserver
+			return false, mustbeserver_todo_x .. " mapaddlight"
 		end
 
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
@@ -686,24 +684,22 @@ minetest.register_chatcommand("walking_light_add_light", {
 			mt_add_node(pos,{type="node",name=walking_light_node})
 		end
 
-		return true, mapaddlight_done
+		return true, command_done
 	end,
 })
 
 local walkinglightdebug_descr = S("Change to debug mode, so light blocks are visible.")
-local walkinglightdebug_mustbeserver = S("You need the server privilege to use walking_light_debug")
-local walkinglightdebug_done = S("Done.")
 minetest.register_chatcommand("walking_light_debug", {
 	description = walkinglightdebug_descr,
 	func = function(name, param)
 		if not minetest.check_player_privs(name, {server=true}) then
-			return false, walkinglightdebug_mustbeserver
+			return false, mustbeserver_todo_x .. " walking_light_debug"
 		end
 
 		walking_light_debug = not walking_light_debug
         update_walking_light_node()
  
-		return true, walkinglightdebug_done
+		return true, command_done
 	end,
 })
 
