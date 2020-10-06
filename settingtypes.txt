@@ -1,3 +1,3 @@
 #For enabling debugmode
 
-enable_debugmode 		(Enable Debugmode)		bool false
+enable_walking_light_debug 		(Enable Debugmode)		bool false
