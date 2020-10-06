@@ -1,0 +1,3 @@
+#For enabling debugmode
+
+enable_debugmode 		(Enable Debugmode)		bool false
