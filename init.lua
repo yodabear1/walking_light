@@ -13,6 +13,9 @@ local last_wielded = {}
 -- toggles debug mode
 local walking_light_debug = minetest.settings:get_bool("enable_walking_light_debug")
 
+--tools to work with
+local walking_light_tools = minetest.settings:get_flags("enabled_tools")
+
 -- name of light node, changed by toggling debug mode
 local walking_light_node = nil
 
@@ -559,7 +562,11 @@ function update_walking_light_node()
 end
 update_walking_light_node()
 
-walking_light.register_tool('pick')
+if walking_light_tools != '' then
+	for i,tool in walking_light_tools do
+		walking_light.register_tool('' .. tool)
+	end	
+end
 
 local diamondhelmet_descr = S("Diamond Helmet with light")
 minetest.register_tool("walking_light:helmet_diamond", {
