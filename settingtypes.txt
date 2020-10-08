@@ -1,0 +1,3 @@
+#For enabling debugmode
+
+enable_walking_light_debug 		(Enable Debugmode)		bool false

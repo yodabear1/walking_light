@@ -11,7 +11,8 @@ local light_positions = {}
 local last_wielded = {}
 
 -- toggles debug mode
-local walking_light_debug = false
+local walking_light_debug = minetest.settings:get_bool("enable_walking_light_debug")
+
 -- name of light node, changed by toggling debug mode
 local walking_light_node = nil
 
