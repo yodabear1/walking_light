@@ -1,3 +1,5 @@
 #For enabling debugmode
 
 enable_walking_light_debug 		(Enable Debugmode)		bool false
+enabled_tools (List of Mese-Tools to work with light) flags pick,shovel,axe,sword
+
