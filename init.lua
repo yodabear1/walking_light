@@ -10,12 +10,6 @@ local light_positions = {}
 -- last item seen wielded by players
 local last_wielded = {}
 
--- toggles debug mode
-local walking_light_debug = minetest.settings:get_bool("enable_walking_light_debug")
-
--- name of light node, changed by toggling debug mode
-local walking_light_node = nil
-
 -- initialize walking light
 walking_light = {}
 
@@ -131,13 +125,9 @@ end
 
 function mt_add_node(pos, sometable)
 	if pos == nil then
-		print("ERROR: walking_light.mt_add_node(), pos is nil")
-		print(debug.traceback("Current Callstack:\n"))
 		return nil
 	end
 	if sometable == nil then
-		print("ERROR: walking_light.mt_add_node(), sometable is nil")
-		print(debug.traceback("Current Callstack:\n"))
 		return nil
 	end
 	minetest.add_node(pos,sometable)
@@ -165,16 +155,13 @@ local function player_moved(player)
 	local oldpos = player_positions[player_name]
 	if oldpos == nil or not poseq(rounded_pos, oldpos) then
 		-- if oldpos is nil, we assume they just logged in, so consider them moved
---		print("DEBUG: walking_light, player_moved(); moved = true; rounded_pos = " .. dumppos(rounded_pos) .. ", oldpos = " .. dumppos(oldpos))
 		return true
 	end
---	print("DEBUG: walking_light, player_moved(); moved = false; rounded_pos = " .. dumppos(rounded_pos) .. ", oldpos = " .. dumppos(oldpos))
 	return false
 end
 
 -- same as table.remove(t,remove_pos), but uses poseq instead of comparing references (does lua have comparator support, so this isn't needed?)
 local function table_remove_pos(t, remove_pos)
---	local DEBUG_oldsize = #t
 
 	for i,pos in ipairs(t) do
 		if poseq(pos, remove_pos) then
@@ -182,9 +169,6 @@ local function table_remove_pos(t, remove_pos)
 			break
 		end
 	end
-
---	local DEBUG_newsize = #t
---	print("DEBUG: walking_light.table_remove_pos(), oldsize = " .. DEBUG_oldsize .. ", newsize = " .. DEBUG_newsize)
 end
 
 -- same as t[remove_pos], but uses poseq instead of comparing references (does lua have comparator support, so this isn't needed?)
@@ -205,7 +189,7 @@ local function table_insert_pos(t, pos)
 end
 
 local function is_light(node)
-	if node ~= nil and node ~= "ignore" and( node.name == "walking_light:light" or node.name == "walking_light:light_debug" ) then
+	if node ~= nil and node ~= "ignore" and node.name == "walking_light:light" then
 		return true
 	end
 	return false
@@ -240,11 +224,9 @@ local function remove_light_player(player)
 
     for i,old_pos in ripairs(light_positions[player_name]) do
 		if old_pos then
---			print("DEBUG: walking_light.remove_light_player(), removing old light; old_pos = " .. dumppos(old_pos))
 			remove_light(player, old_pos)
 		end
 	end
---	print("DEBUG: walking_light.remove_light_player(), done; light_positions = " .. dumppostable(light_positions[player_name]))
 end
 
 local function can_add_light(pos)
@@ -253,13 +235,10 @@ local function can_add_light(pos)
 		-- if node is nil (unknown) or ignore (not generated), then we don't do anything.
 		return false
 	elseif node.name == "air" then
---		print("walking_light can_add_light(), pos = " .. dumppos(pos) .. ", true")
 		return true
 	elseif is_light(node) then
---		print("walking_light can_add_light(), pos = " .. dumppos(pos) .. ", true")
 		return true
 	end
---	print("walking_light can_add_light(), pos = " .. dumppos(pos) .. ", false")
 	return false
 end
 
@@ -357,32 +336,21 @@ local function add_light(player, pos)
 	local node  = mt_get_node_or_nil(pos)
 	if node == nil or node == "ignore" then
 		-- don't do anything for nil (non-loaded) or ignore (non-generated) blocks, so we don't want to overwrite anything there
---		print("DEBUG: walking_light.add_light(), node is nil, pos = " .. dumppos(pos))
 		return false
 	elseif node.name == "air" then
 		-- when the node that is already there is air, add light
-		mt_add_node(pos,{type="node",name=walking_light_node})
+		mt_add_node(pos,{type="node",name="walking_light:light"})
 		if not table_contains_pos(light_positions[player_name], pos) then
 			table_insert_pos(light_positions[player_name], pos)
 		end
-
---		if node then
---			print("DEBUG: add_light(), node.name = " .. node.name .. ", pos = " .. dumppos(pos))
---		else
---			print("DEBUG: add_light(), node.name = nil, pos = " .. dumppos(pos))
---		end
 		return true
 	elseif is_light(node) then
 		-- no point in adding light where it is already, but we should assign it to the player so it gets removed (in case it has no player)
---		print("DEBUG: add_light(), not adding; node.name = " .. node.name .. ", pos = " .. dumppos(pos))
-
 		if not table_contains_pos(light_positions[player_name], pos) then
 			table_insert_pos(light_positions[player_name], pos)
 		end
-
 		return true
 	end
---	print("DEBUG: add_light(), not adding; node.name = " .. node.name)
 	return false
 end
 
@@ -418,7 +386,6 @@ local function update_light_player(player)
 	if wielded_item then
 		-- decide where light should be
 		wantlightpos = pick_light_position(player, wantpos, wielded_item)
---		print("DEBUG: walking_light update_light_player(); wantpos = " .. dumppos(wantpos) .. ", wantlightpos = " .. dumppos(wantlightpos))
 	end
 
 	if wielded_item and wantlightpos then
@@ -436,8 +403,6 @@ local function update_light_player(player)
     end
 
 	player_positions[player_name] = vector.round(pos)
-
---	print("DEBUG: walking_light.update_light_player(): wantlightpos = " .. dumppostable(wantlightpos) .. ", light_positions = " .. dumppostable(light_positions[player_name]))
 end
 
 local function update_light_all()
@@ -520,21 +485,6 @@ minetest.register_globalstep(function(dtime)
 	end
 end)
 
-minetest.register_node("walking_light:light_debug", {
-	drawtype = "airlike",
-	tiles = {"walking_light_debug.png"},
-	inventory_image = minetest.inventorycube("walking_light.png"),
-	paramtype = "light",
-	walkable = false,
-	is_ground_content = true,
-	sunlight_propagates = true,
-	light_source = 13,
-	selection_box = {
-		type = "fixed",
-		fixed = {0, 0, 0, 0, 0, 0},
-	},
-})
-
 minetest.register_node("walking_light:light", {
 	drawtype = "airlike",
 	tiles = {"walking_light.png"},
@@ -549,15 +499,6 @@ minetest.register_node("walking_light:light", {
 		fixed = {0, 0, 0, 0, 0, 0},
 	},
 })
-
-function update_walking_light_node()
-	if walking_light_debug then
-		walking_light_node = "walking_light:light_debug"
-	else
-		walking_light_node = "walking_light:light"
-	end
-end
-update_walking_light_node()
 
 walking_light.register_tool('pick')
 
@@ -654,15 +595,13 @@ minetest.register_chatcommand("walking_light_clear_light", {
 		local pos = vector.round(minetest.get_player_by_name(name):getpos())
 		local size = tonumber(param) or 40
 
-		for i,v in ipairs({"walking_light:light", "walking_light:light_debug"}) do
-			point = minetest.find_node_near(pos, size/2, v)
-			while point do
-				remove_light(nil, point)
-				oldpoint = point
-				point = minetest.find_node_near(pos, size/2, v)
-				if poseq(oldpoint, point) then
-					return false, mapclearlight_infloop_fail
-				end
+		point = minetest.find_node_near(pos, size/2, "walking_light:light")
+		while point do
+			remove_light(nil, point)
+			oldpoint = point
+			point = minetest.find_node_near(pos, size/2, "walking_light:light")
+			if poseq(oldpoint, point) then
+				return false, mapclearlight_infloop_fail
 			end
 		end
 		return true, command_done
@@ -682,26 +621,9 @@ minetest.register_chatcommand("walking_light_add_light", {
 		pos = vector.new(pos.x, pos.y + 1, pos.z)
 
 		if pos then
-			mt_add_node(pos,{type="node",name=walking_light_node})
+			mt_add_node(pos,{type="node",name="walking_light:light"})
 		end
 
 		return true, command_done
 	end,
 })
-
-local walkinglightdebug_descr = S("Change to debug mode, so light blocks are visible.")
-minetest.register_chatcommand("walking_light_debug", {
-	description = walkinglightdebug_descr,
-	func = function(name, param)
-		if not minetest.check_player_privs(name, {server=true}) then
-			return false, mustbeserver_todo_x .. " walking_light_debug"
-		end
-
-		walking_light_debug = not walking_light_debug
-        update_walking_light_node()
- 
-		return true, command_done
-	end,
-})
-
--- vim: ts=4 sw=4 softtabstop=4 smarttab noexpandtab
